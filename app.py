@@ -5,7 +5,6 @@ from PIL import Image
 import fitz  # PyMuPDF
 import pandas as pd
 import io
-from dotenv import load_dotenv
 import streamlit as st
 import os
 import google.generativeai as genai
@@ -225,3 +224,4 @@ if prompt := st.chat_input("Nhập lệnh (Vd: Bóc tách toàn bộ hệ Điệ
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
             except Exception as e:
                 st.error(f"Lỗi: {e}. (Gợi ý: Nếu file quá nhiều trang, hãy tách nhỏ ra).")
+
