@@ -12,8 +12,6 @@ from PIL import Image
 import fitz  # PyMuPDF
 import pandas as pd
 import io
-# from dotenv import load_dotenv # <--- KHI LÊN CLOUD THÌ KHÔNG CẦN DÒNG NÀY NỮA, AI SẼ TỰ HIỂU QUA SECRETS
-
 # --- CẤU HÌNH TRANG ---
 st.set_page_config(page_title="MEP Project AI", page_icon="🔐", layout="wide")
 
@@ -58,7 +56,6 @@ model = genai.GenerativeModel('gemini-2.5-flash')
 
 # ... (Dán toàn bộ phần code xử lý PDF, Chatbot cũ của bạn vào dưới đây) ...
 # --- CẤU HÌNH ---
-load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 
 st.set_page_config(page_title="MEP Project Manager AI", page_icon="🏗️", layout="wide")
@@ -224,4 +221,5 @@ if prompt := st.chat_input("Nhập lệnh (Vd: Bóc tách toàn bộ hệ Điệ
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
             except Exception as e:
                 st.error(f"Lỗi: {e}. (Gợi ý: Nếu file quá nhiều trang, hãy tách nhỏ ra).")
+
 
