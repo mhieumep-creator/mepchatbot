@@ -1,6 +1,7 @@
 streamlit
-google-generativeai
+google-genai
 pymupdf
 pandas
 openpyxl
 pillow
+python-dotenv
