@@ -1,7 +1,13 @@
 import asyncio
 import os
 import sys
-
+import logging
+import time
+# Chỉ cho phép WARNING trở lên (ẩn INFO/DEBUG)
+logging.basicConfig(level=logging.WARNING)
+# (tùy chọn) Giảm log riêng của google.genai và httpx
+logging.getLogger("google.genai").setLevel(logging.ERROR)
+logging.getLogger("httpx").setLevel(logging.ERROR)
 # Cấu hình stdout/stderr để in được tiếng Việt trên Windows, tránh lỗi 'charmap'
 if hasattr(sys.stdout, "reconfigure"):
     try:
@@ -28,7 +34,8 @@ async def main() -> None:
         print("Kết quả:", result)
     except Exception as e:
         print("Lỗi khi gọi sum_numbers:", e)
-
+ 
+    time.sleep(3)
     # 2. Test hello_gemini
     print("\n[2] Test hello_gemini('AutoCAD user'):")
     try:
@@ -38,6 +45,7 @@ async def main() -> None:
         print("Lỗi khi gọi hello_gemini:", e)
 
     # 3. Test ask_gemini với một prompt đơn giản
+    time.sleep(3)
     print("\n[3] Test ask_gemini với prompt đơn giản:")
     try:
         prompt = "Giải thích ngắn gọn: AutoCAD MEP là gì?"
@@ -45,8 +53,6 @@ async def main() -> None:
         print("Phản hồi Gemini:\n", answer)
     except Exception as e:
         print("Lỗi khi gọi ask_gemini:", e)
-
-
 if __name__ == "__main__":
     try:
         asyncio.run(main())
