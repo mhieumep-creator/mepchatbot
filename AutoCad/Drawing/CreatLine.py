@@ -1,41 +1,32 @@
-using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.Geometry;
+import win32com.client
+from win32com.client import VARIANT
+import pythoncom
 
-public static class CadDraw
-{
-    public static ObjectId CreateLine(Point3d startPoint, Point3d endPoint, string layer = "0")
-    {
-        Document doc = Application.DocumentManager.MdiActiveDocument;
-        Database db = doc.Database;
+def APoint(x, y, z=0):
+    return VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8, (x, y, z))
 
-        using (Transaction tr = db.TransactionManager.StartTransaction())
-        {
-            // Open ModelSpace
-            BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
-            BlockTableRecord ms =
-                (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
+def create_line_with_layer(start_point, end_point, layer_name):
+    acad = win32com.client.Dispatch("AutoCAD.Application")
+    acad.Visible = True
 
-            // Ensure layer exists
-            LayerTable lt = (LayerTable)tr.GetObject(db.LayerTableId, OpenMode.ForRead);
-            if (!lt.Has(layer))
-            {
-                lt.UpgradeOpen();
-                LayerTableRecord ltr = new LayerTableRecord();
-                ltr.Name = layer;
-                lt.Add(ltr);
-                tr.AddNewlyCreatedDBObject(ltr, true);
-            }
+    doc = acad.ActiveDocument
+    ms = doc.ModelSpace
+    layers = doc.Layers
 
-            // Create line
-            Line line = new Line(startPoint, endPoint);
-            line.Layer = layer;
+    # Kiểm tra layer tồn tại
+    layer_exists = False
+    for i in range(layers.Count):
+        if layers.Item(i).Name.lower() == layer_name.lower():
+            layer_exists = True
+            break
 
-            ObjectId id = ms.AppendEntity(line);
-            tr.AddNewlyCreatedDBObject(line, true);
+    if not layer_exists:
+        layers.Add(layer_name)
 
-            tr.Commit();
-            return id;
-        }
-    }
-}
+    sp = APoint(*start_point)
+    ep = APoint(*end_point)
+
+    line = ms.AddLine(sp, ep)
+    line.Layer = layer_name
+
+    return line, line.Handle
