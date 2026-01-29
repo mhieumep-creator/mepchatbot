@@ -79,6 +79,8 @@ async def create_line_tool(start_x: float, start_y: float, start_z: float, end_x
         return f"Đã tạo Line với handle: {handle}"
     else:
         return "Lỗi khi tạo Line trong AutoCAD."
+
+#Tools tạo đường tròn
 @mcp.tool()
 async def create_circle_tool(
     center_x: float,
@@ -89,22 +91,80 @@ async def create_circle_tool(
 ) -> str:
     center_point = [center_x, center_y, center_z]  # Tạo list từ 3 tham số
     result = create_circle(center_point, radius, layer)
-    
-    if result:
-        return f"Đã tạo Circle với handle: {result}"
+
+#Tools vẽ Mline
+@mcp.tool()
+async def create_mline_tool(
+    points: list[tuple[float, float]] | list[tuple[float, float, float]],
+    layer: str = "0",
+    style: str = "Standard",
+    scale: float = 1.0
+) -> str:
+    """
+    Tạo Mline trong AutoCAD.
+    points: list các tuple (x, y, z) hoặc (x, y)
+    layer: tên layer
+    style: tên style Mline
+    scale: hệ số scale
+    Trả về handle của Mline vừa tạo hoặc thông báo lỗi.
+    """
+    from AutoCad.Drawing.CreatMline import create_mline
+
+    handle = create_mline(points, layer, style, scale)
+    if handle:
+        return f"Đã tạo Mline với handle: {handle}"
     else:
-        return "Lỗi khi tạo Circle trong AutoCAD."
+        return "Lỗi khi tạo Mline trong AutoCAD."
 
+#Tools Lấy thông số đối tượng được quét
+@mcp.tool()
+async def GetdataObject_tool() -> str:
+    from AutoCad.Drawing.GetdataObject import (
+        connect_autocad,
+        select_objects_from_user,
+        get_block_attributes,
+        get_block_dynamic_properties
+    )
+    import json
 
+    try:
+        acad, doc = connect_autocad()
+        ss = select_objects_from_user(doc)
 
+        result = []
+        for entity in ss:
+            obj_info = {
+                "Handle": entity.Handle,
+                "Type": entity.ObjectName,
+                "Layer": entity.Layer
+            }
 
+            # ===== LẤY TỌA ĐỘ CHUNG =====
+            if hasattr(entity, "StartPoint"):
+                obj_info["StartPoint"] = list(entity.StartPoint)
+            if hasattr(entity, "EndPoint"):
+                obj_info["EndPoint"] = list(entity.EndPoint)
+            if hasattr(entity, "Center"):
+                obj_info["Center"] = list(entity.Center)
+            if hasattr(entity, "InsertionPoint"):
+                obj_info["InsertionPoint"] = list(entity.InsertionPoint)
+            if hasattr(entity, "Coordinates"):
+                obj_info["Coordinates"] = list(entity.Coordinates)
 
+            # ===== BLOCK =====
+            if entity.ObjectName == "AcDbBlockReference":
+                obj_info["BlockName"] = entity.Name
+                obj_info["Attributes"] = get_block_attributes(entity)
+                obj_info["DynamicProperties"] = get_block_dynamic_properties(entity)
 
+            result.append(obj_info)
 
+        ss.Delete()
+        return json.dumps(result, ensure_ascii=False, indent=4)
 
+    except Exception as e:
+        return f"Lỗi khi lấy dữ liệu đối tượng: {str(e)}"
 
-
-
-
+    
 if __name__ == "__main__":
     mcp.run()
