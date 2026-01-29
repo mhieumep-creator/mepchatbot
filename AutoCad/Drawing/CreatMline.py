@@ -32,14 +32,18 @@ def create_mline(points, layer="0", style="Standard", scale=1.0):
         if not layer_exists:
             doc.Layers.Add(layer)
 
+        # Set biến hệ thống MLINESCALE trước khi tạo MLINE
+        try:
+            doc.SetVariable("MLINESCALE", scale)
+        except Exception as e:
+            print(f"KHONG THE SETBIEN HE THONG MLINESCALE: {e}")
+
         # Tạo Mline
         mline = ms.AddMLine(points_array)
         mline.Layer = layer
-        
-        # *** THÊM 2 DÒNG NÀY ĐỂ SET SCALE VÀ STYLE ***
         mline.StyleName = style
         mline.MLineScale = scale
-        
+
         # Refresh drawing
         doc.Regen(1)  # acAllViewports = 1
 
@@ -51,4 +55,4 @@ def create_mline(points, layer="0", style="Standard", scale=1.0):
         return None
 
 # Ví dụ sử dụng
-#create_mline([(0, 0), (100, 0), (100, 100), (0, 100)], layer="MyLayer", style="HTS-ONG", scale=2.0)
+create_mline([(0, 0), (100, 0), (100, 100), (0, 100)], layer="STANDARD", style="0", scale=2.0)
