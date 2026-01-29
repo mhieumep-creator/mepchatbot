@@ -1,59 +1,32 @@
-using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.Geometry;
-using Autodesk.AutoCAD.Colors;
+import win32com.client
+import pythoncom
 
-public static class CadDraw
-{
-    public static string CreateCircle(
-        double centerX,
-        double centerY,
-        double radius,
-        string layerName = "0",
-        short colorIndex = 256 // ByLayer
-    )
-    {
-        Document doc = Application.DocumentManager.MdiActiveDocument;
-        Database db = doc.Database;
+def create_circle(center_point, radius, layer="0"):
+    try:
+        acad = win32com.client.Dispatch("AutoCAD.Application")
+        doc = acad.ActiveDocument
+        ms = doc.ModelSpace
+        center_point = center_point
+        radius = radius  # end_point truyền vào là bán kính
 
-        using (Transaction tr = db.TransactionManager.StartTransaction())
-        {
-            // 1. Mở BlockTable và ModelSpace
-            BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
-            BlockTableRecord ms =
-                (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
+        center_array = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8, center_point)
 
-            // 2. Đảm bảo Layer tồn tại
-            LayerTable lt = (LayerTable)tr.GetObject(db.LayerTableId, OpenMode.ForRead);
-            if (!lt.Has(layerName))
-            {
-                lt.UpgradeOpen();
-                LayerTableRecord ltr = new LayerTableRecord
-                {
-                    Name = layerName
-                };
-                lt.Add(ltr);
-                tr.AddNewlyCreatedDBObject(ltr, true);
-            }
+        # Đảm bảo layer tồn tại
+        layer_exists = False
+        for layer_obj in doc.Layers:
+            if layer_obj.Name == layer:
+                layer_exists = True
+                break
+        if not layer_exists:
+            doc.Layers.Add(layer)
 
-            // 3. Tạo Circle
-            Circle circle = new Circle
-            {
-                Center = new Point3d(centerX, centerY, 0),
-                Radius = radius,
-                Layer = layerName,
-                Color = Color.FromColorIndex(ColorMethod.ByAci, colorIndex)
-            };
+        # Tạo Circle
+        circle = ms.AddCircle(center_array, radius)
+        circle.Layer = layer
 
-            // 4. Thêm vào ModelSpace
-            ms.AppendEntity(circle);
-            tr.AddNewlyCreatedDBObject(circle, true);
-
-            // 5. Lấy Handle để AI dùng tiếp
-            string handle = circle.Handle.ToString();
-
-            tr.Commit();
-            return handle;
-        }
-    }
-}
+        return str(circle.Handle)
+    except Exception as e:
+        print(f"Loi khi tao circle: {e}")
+        import traceback
+        traceback.print_exc()
+        return None

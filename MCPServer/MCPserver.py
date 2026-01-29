@@ -1,4 +1,10 @@
+import sys
 import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from AutoCad.Drawing.CreatLine import create_line
+from AutoCad.Drawing.CreatCircle import create_circle
+
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 import anthropic
@@ -59,6 +65,46 @@ async def hello_claude(name: str) -> str:
 async def sum_numbers(a: int, b: int) -> int:
     """Công cụ mẫu để tính tổng hai số."""
     return a + b
+# Tool tạo đường thẳng trong AutoCAD
+@mcp.tool()
+async def create_line_tool(start_x: float, start_y: float, start_z: float, end_x: float, end_y: float, end_z: float, layer: str = "0") -> str:
+    """
+    Tạo một đoạn thẳng trong AutoCAD từ điểm (start_x, start_y, start_z) đến (end_x, end_y, end_z) trên layer chỉ định.
+    Trả về handle của Line vừa tạo hoặc thông báo lỗi.
+    """
+    start_point = (start_x, start_y, start_z)
+    end_point = (end_x, end_y, end_z)
+    handle = create_line(start_point, end_point, layer)
+    if handle:
+        return f"Đã tạo Line với handle: {handle}"
+    else:
+        return "Lỗi khi tạo Line trong AutoCAD."
+@mcp.tool()
+async def create_circle_tool(
+    center_x: float,
+    center_y: float, 
+    center_z: float,
+    radius: float,
+    layer: str = "0"
+) -> str:
+    center_point = [center_x, center_y, center_z]  # Tạo list từ 3 tham số
+    result = create_circle(center_point, radius, layer)
+    
+    if result:
+        return f"Đã tạo Circle với handle: {result}"
+    else:
+        return "Lỗi khi tạo Circle trong AutoCAD."
+
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     mcp.run()

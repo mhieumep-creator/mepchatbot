@@ -1,41 +1,34 @@
-using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.Geometry;
+import win32com.client
+import pythoncom
 
-public static class CadDraw
-{
-    public static ObjectId CreateLine(Point3d startPoint, Point3d endPoint, string layer = "0")
-    {
-        Document doc = Application.DocumentManager.MdiActiveDocument;
-        Database db = doc.Database;
+def create_line(start_point, end_point, layer="0"):
+    try:
+        acad = win32com.client.Dispatch("AutoCAD.Application")
+        doc = acad.ActiveDocument
+        ms = doc.ModelSpace
 
-        using (Transaction tr = db.TransactionManager.StartTransaction())
-        {
-            // Open ModelSpace
-            BlockTable bt = (BlockTable)tr.GetObject(db.BlockTableId, OpenMode.ForRead);
-            BlockTableRecord ms =
-                (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite);
+        # ✅ QUAN TRỌNG: Chuyển tuple thành array
+        start_array = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8, start_point)
+        end_array = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8, end_point)
 
-            // Ensure layer exists
-            LayerTable lt = (LayerTable)tr.GetObject(db.LayerTableId, OpenMode.ForRead);
-            if (!lt.Has(layer))
-            {
-                lt.UpgradeOpen();
-                LayerTableRecord ltr = new LayerTableRecord();
-                ltr.Name = layer;
-                lt.Add(ltr);
-                tr.AddNewlyCreatedDBObject(ltr, true);
-            }
+        # Đảm bảo layer tồn tại
+        layer_exists = False
+        for layer_obj in doc.Layers:
+            if layer_obj.Name == layer:
+                layer_exists = True
+                break
+        
+        if not layer_exists:
+            doc.Layers.Add(layer)
 
-            // Create line
-            Line line = new Line(startPoint, endPoint);
-            line.Layer = layer;
+        # Tạo Line với array
+        line = ms.AddLine(start_array, end_array)
+        line.Layer = layer
 
-            ObjectId id = ms.AppendEntity(line);
-            tr.AddNewlyCreatedDBObject(line, true);
-
-            tr.Commit();
-            return id;
-        }
-    }
-}
+        return str(line.Handle)
+        
+    except Exception as e:
+        print(f"Loi khi tao line: {e}")
+        import traceback
+        traceback.print_exc()  # In chi tiết lỗi
+        return None
