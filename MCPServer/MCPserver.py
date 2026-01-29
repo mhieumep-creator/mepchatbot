@@ -61,10 +61,14 @@ async def hello_claude(name: str) -> str:
         return getattr(response, "content", getattr(response, "completion", str(response)))
     except Exception as e:
         return f"Lỗi khi gọi Claude: {str(e)}"
+    
+# Tool tính tổng hai số
 @mcp.tool()
 async def sum_numbers(a: int, b: int) -> int:
     """Công cụ mẫu để tính tổng hai số."""
     return a + b
+
+
 # Tool tạo đường thẳng trong AutoCAD
 @mcp.tool()
 async def create_line_tool(start_x: float, start_y: float, start_z: float, end_x: float, end_y: float, end_z: float, layer: str = "0") -> str:
@@ -109,7 +113,6 @@ async def create_mline_tool(
     Trả về handle của Mline vừa tạo hoặc thông báo lỗi.
     """
     from AutoCad.Drawing.CreatMline import create_mline
-
     handle = create_mline(points, layer, style, scale)
     if handle:
         return f"Đã tạo Mline với handle: {handle}"

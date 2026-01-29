@@ -5,3 +5,6 @@ pandas
 openpyxl
 pillow
 python-dotenv
+pywin32
+mcp
+anthropic
