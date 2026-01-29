@@ -10,6 +10,13 @@ def create_mline(points, layer="0", style="Standard", scale=1.0):
     scale: hệ số scale
     """
     try:
+        # Chỉ cho phép đúng 2 điểm
+        if len(points) < 2:
+            raise ValueError("Cần ít nhất 2 điểm để tạo Mline.")
+        if len(points) > 2:
+            print("Chỉ lấy 2 điểm đầu tiên để tạo Mline.")
+            points = points[:2]
+
         acad = win32com.client.Dispatch("AutoCAD.Application")
         doc = acad.ActiveDocument
         ms = doc.ModelSpace
@@ -31,17 +38,20 @@ def create_mline(points, layer="0", style="Standard", scale=1.0):
                 break
         if not layer_exists:
             doc.Layers.Add(layer)
+            if len(points) != 2:
+                raise ValueError("Hàm này chỉ nhận đúng 2 điểm (đầu-cuối)")
 
-        # Set biến hệ thống MLINESCALE trước khi tạo MLINE
+        # Set style trước khi tạo MLine (không set được qua property)
         try:
-            doc.SetVariable("MLINESCALE", scale)
+                    # 1. Thiết lập style TRƯỚC KHI tạo MLine
+            doc.SetVariable("CMLSTYLE", style)  # Set current MLine style
+            doc.SetVariable("CMLSCALE", scale)  # Set MLine scale
         except Exception as e:
-            print(f"KHONG THE SETBIEN HE THONG MLINESCALE: {e}")
+            print(f"Không thể set biến hệ thống MLSTYLE: {e}")
 
-        # Tạo Mline
         mline = ms.AddMLine(points_array)
         mline.Layer = layer
-        mline.StyleName = style
+        # Không set được StyleName trực tiếp, chỉ set được khi tạo qua biến hệ thống
         mline.MLineScale = scale
 
         # Refresh drawing
@@ -53,6 +63,3 @@ def create_mline(points, layer="0", style="Standard", scale=1.0):
         import traceback
         traceback.print_exc()
         return None
-
-# Ví dụ sử dụng
-create_mline([(0, 0), (100, 0), (100, 100), (0, 100)], layer="STANDARD", style="0", scale=2.0)
