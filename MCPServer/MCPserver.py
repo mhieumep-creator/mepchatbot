@@ -4,6 +4,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from AutoCad.Drawing.CreatLine import create_line
 from AutoCad.Drawing.CreatCircle import create_circle
+from AutoCad.Drawing.CreatMline import create_mline
 
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
@@ -99,25 +100,44 @@ async def create_circle_tool(
 #Tools vẽ Mline
 @mcp.tool()
 async def create_mline_tool(
-    points: list[tuple[float, float]] | list[tuple[float, float, float]],
-    layer: str = "0",
-    style: str = "Standard",
-    scale: float = 1.0
+    batch_params: list[dict]
 ) -> str:
     """
-    Tạo Mline trong AutoCAD.
-    points: list các tuple (x, y, z) hoặc (x, y)
-    layer: tên layer
-    style: tên style Mline
-    scale: hệ số scale
-    Trả về handle của Mline vừa tạo hoặc thông báo lỗi.
+    Tạo nhiều Mline trong AutoCAD bằng batch_create_mline.
+    batch_params: List các dict, mỗi dict gồm:
+        {
+            'points': [(x1, y1, z1), (x2, y2, z2), ...],
+            'layer': 'LayerName',
+            'style': 'StyleName',
+            'scale': 1.0
+        }
+    Returns:
+        Danh sách handle hoặc thông báo lỗi tương ứng từng đoạn Mline (kể cả khi 1 dict có nhiều đoạn).
     """
-    from AutoCad.Drawing.CreatMline import create_mline
-    handle = create_mline(points, layer, style, scale)
-    if handle:
-        return f"Đã tạo Mline với handle: {handle}"
-    else:
-        return "Lỗi khi tạo Mline trong AutoCAD."
+    from AutoCad.Drawing.CreatMline import batch_create_mline
+    # Tính tổng số đoạn sẽ tạo để đánh số đúng
+    total_segments = 0
+    for param in batch_params:
+        pts = param.get('points', [])
+        if len(pts) >= 2:
+            total_segments += max(0, len(pts)-1)
+    results = batch_create_mline(batch_params)
+    output = []
+    seg_idx = 1
+    res_idx = 0
+    for param in batch_params:
+        pts = param.get('points', [])
+        n = max(0, len(pts)-1)
+        for i in range(n):
+            if res_idx < len(results):
+                res = results[res_idx]
+                if res:
+                    output.append(f"Mline đoạn {seg_idx}: handle {res}")
+                else:
+                    output.append(f"Mline đoạn {seg_idx}: lỗi")
+                seg_idx += 1
+                res_idx += 1
+    return "\n".join(output)
 
 #Tools Lấy thông số đối tượng được quét
 @mcp.tool()
@@ -142,6 +162,7 @@ async def GetdataObject_tool() -> str:
                 "Layer": entity.Layer
             }
 
+
             # ===== LẤY TỌA ĐỘ CHUNG =====
             if hasattr(entity, "StartPoint"):
                 obj_info["StartPoint"] = list(entity.StartPoint)
@@ -153,6 +174,10 @@ async def GetdataObject_tool() -> str:
                 obj_info["InsertionPoint"] = list(entity.InsertionPoint)
             if hasattr(entity, "Coordinates"):
                 obj_info["Coordinates"] = list(entity.Coordinates)
+
+            # ===== LẤY TEXTSTRING (TEXT/MTEXT) =====
+            if entity.ObjectName in ["AcDbText", "AcDbMText"] and hasattr(entity, "TextString"):
+                obj_info["TextString"] = entity.TextString
 
             # ===== BLOCK =====
             if entity.ObjectName == "AcDbBlockReference":
