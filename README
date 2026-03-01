@@ -1,75 +1,26 @@
-HTOOLS-AI là nền tảng công cụ thông minh ứng dụng Trí tuệ nhân tạo (AI) vào AutoCAD, tập trung giải quyết các bài toán cốt lõi trong lĩnh vực MEP:
+1 Vẽ ống Thoát nước
+Bước 1:  Vẽ ống thoát nước
+Claude sử dụng tools getdatapolyline yêu cầu người dùng quét chọn các Polyline từ bản vẽ thiết kế để lấy thông tin các đường Polyline trích xuất toạn độ và đưa vào ListMline.json theo chuẩn
+Bước 2: AI phân tích ống nhánh, ống chính
+sau đó sử sụng tools VON để vẽ đường ống cấp nước
+Nếu AI xác định được vị trí thoát xí, thoát chậu, thoát sàn, trục thoát sẽ suwr dụng tools combo insert các block tương ứng như sau
+Thông tắc:
+Thoát xí: 
+Thoát Chậu rửa, lavabo:
+Thoát sàn:
+Trục thoát: 
+Ví dụ :.....
+2. Vẽ ống Cấp nước:
+Bước 1:  Vẽ ống thoát nước
+Claude sử dụng tools getdatapolyline yêu cầu người dùng quét chọn các Polyline từ bản vẽ thiết kế để lấy thông tin các đường Polyline trích xuất toạn độ và đưa vào ListMline.json theo chuẩn
+Bước 2: AI phân tích ống nhánh, ống chính
+sau đó sử sụng tools VON_PPR để vẽ đường ống cấp nước
+Nếu AI xác định được vị trí thoát xí, thoát chậu, thoát sàn, trục thoát sẽ suwr dụng tools combo insert các block tương ứng như sau
+Xí: 
+Chậu rửa, lavabo:
+Trục cấp:
+Van:
+Thiết bị bình nóng lạnh:
+Sen:
+Ví dụ :.....
 
-🔍 Tự động đọc và hiểu bản vẽ
-Nhận diện layer, block, ký hiệu, tuyến ống/cáp và mối liên hệ kỹ thuật giữa các đối tượng trong bản vẽ CAD.
-
-📊 Bóc tách khối lượng MEP tự động
-Phân tích bản vẽ để thống kê chính xác khối lượng ống, cáp, phụ kiện, thiết bị theo tiêu chuẩn và quy ước dự án.
-
-✏️ Hỗ trợ vẽ và triển khai bản vẽ
-Tự động vẽ tuyến, chèn block, hoàn thiện bản vẽ shop drawing dựa trên dữ liệu và logic kỹ thuật đã được AI phân tích.
-
-⚙️ Chuẩn hóa và tăng hiệu suất làm việc
-Giảm phụ thuộc vào thao tác thủ công, hạn chế sai sót, rút ngắn thời gian thiết kế và kiểm soát chất lượng bản vẽ.
-
-Htools hướng tới mục tiêu trở thành trợ lý AI cho kỹ sư MEP, hỗ trợ hiệu quả từ giai đoạn đọc bản vẽ, thiết kế đến bóc tách khối lượng và triển khai thi công.
-
-📁 1. autocad/ – Tầng làm việc với AutoCAD
-
-👉 Nơi giao tiếp trực tiếp với AutoCAD
-
-autocad/  
-├── api/                # Giao tiếp AutoCAD API (COM, .NET, pyautocad…)  
-├── commands/           # Các command AutoCAD (LOAD, RUN, AI_QTY…)  
-├── blocks/             # Quản lý block MEP (insert, replace, analyze)  
-├── layers/             # Chuẩn hóa layer, mapping layer  
-├── utils/              # Hàm hỗ trợ AutoCAD  
-
-
-💡 Phần này không AI, tập trung:  
-  
-Đọc DWG  
-  
-Lấy object (line, polyline, block, mline…)  
-
-Vẽ ngược lại vào CAD  
-📁 2. ai/ – Trái tim AI của dự án  
-👉 Toàn bộ logic “đọc – hiểu – suy luận”  
-ai/  
-├── models/             # Model AI (CV, NLP, ML)  
-├── training/           # Code train model  
-├── inference/          # Suy luận (đọc bản vẽ)  
-├── rules/              # Luật kỹ thuật MEP (rule-based)  
-├── datasets/           # Dữ liệu huấn luyện  
-  
-  
-Ví dụ AI dùng cho:  
-  
-Nhận diện tuyến ống/cáp  
-  
-Phân loại hệ MEP  
-  
-Hiểu mối liên hệ thiết bị – tuyến – phụ kiện  
-  
-📁 3. parser/ – Đọc & chuyển đổi dữ liệu bản vẽ  
-👉 Cầu nối giữa AutoCAD và AI  
-parser/  
-#├── dwg_reader.py       # Đọc dữ liệu từ AutoCAD  
-#├── geometry.py         # Xử lý hình học  
-#├── topology.py         # Quan hệ kết nối tuyến  
-#├── normalize.py        # Chuẩn hóa dữ liệu cho AI  
-  
-  
-💡 RẤT QUAN TRỌNG  
-AI không đọc CAD trực tiếp → phải qua tầng này  
-  
-📁 4. mep/ – Logic chuyên ngành MEP  
-  
-👉 Kiến thức kỹ thuật MEP  
-  
-mep/  
-├── electrical/  
-├── hvac/  
-├── plumbing/  
-├── fire_fighting/  
-├── standards/    
