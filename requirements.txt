@@ -1,9 +1,5 @@
 streamlit
-google-genai
-pymupdf
-pandas
-openpyxl
-pillow
 python-dotenv
 anthropic
+google-generativeai
 mcp[cli]
