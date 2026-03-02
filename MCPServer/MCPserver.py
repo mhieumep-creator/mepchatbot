@@ -36,6 +36,8 @@ async def ask_claude(prompt: str) -> str:
         return response.content[0].text if response.content else "Không có phản hồi từ Claude."
     except Exception as e:
         return f"Lỗi khi gọi Claude: {str(e)}"
+
+
 @mcp.tool()
 async def hello_claude(name: str) -> str:
     """Công cụ mẫu để kiểm tra kết nối với Claude."""
@@ -49,6 +51,9 @@ async def hello_claude(name: str) -> str:
         return response.content[0].text if response.content else "Không có phản hồi từ Claude."
     except Exception as e:
         return f"Lỗi khi gọi Claude: {str(e)}"
+
+
+        
 @mcp.tool()
 async def sum_numbers(a: int, b: int) -> int:
     """Công cụ mẫu để tính tổng hai số."""
