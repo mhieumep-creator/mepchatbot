@@ -15,6 +15,7 @@ logs/
 
 # Env keys / secrets
 Key.env
+XYZ.env
 *.env
 
 # OS / editor junk
